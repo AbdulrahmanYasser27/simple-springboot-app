@@ -1,0 +1,41 @@
+name: CD Pipeline
+
+on:
+  workflow_dispatch:   # allows manual trigger
+  push:
+    branches: [ "main" ]   # also runs on pushes to main branch
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest  # GitHub Actions uses Linux VM
+
+    steps:
+      # Step 1: Checkout your repo to access file form k8s
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Step 2: Setup kubectl (CLI to control Kubernetes)
+      - name: Set up Kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'v1.27.0'
+
+      # Step 3: Deploy to dev namespace
+      - name: Deploy to dev
+        run: |
+          kubectl apply -f k8s/deployment.yaml -n dev
+          kubectl apply -f k8s/service.yaml -n dev
+          kubectl apply -f k8s/ingress.yaml -n dev
+
+      # Step 4: Smoke test dev
+      - name: Smoke test dev
+        run: |
+          DEV_IP=$(minikube ip)  # gets minikube IP
+          curl --fail http://simple.local || exit 1  # check if service responds
+
+      # Step 5: Deploy to prod if dev passes
+      - name: Deploy to prod
+        run: |
+          kubectl apply -f k8s/deployment.yaml -n prod
+          kubectl apply -f k8s/service.yaml -n prod
+          kubectl apply -f k8s/ingress.yaml -n prod

@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: simple-backend
+  namespace: dev  # <-- this will be dev first
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: simple-backend
+  template:
+    metadata:
+      labels:
+        app: simple-backend
+    spec:
+      containers:
+        - name: simple-backend
+          image: abdulrahman1235/simple-backend:latest  # <-- DOCKER IMAGE FROM HUB
+          ports:
+            - containerPort: 8080

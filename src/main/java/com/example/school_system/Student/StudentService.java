@@ -14,7 +14,6 @@ public class StudentService {
 
     private final CourseRepo courseRepo;
 
-
     @Autowired
     public StudentService(StudentRepo studentRepo, CourseRepo courseRepo) {
         this.studentRepo = studentRepo;
